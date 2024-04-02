@@ -76,13 +76,13 @@ visualize_hotspots(np.load(density_data_path), hotspots)
 
 ## Issues
 
-If you encounter any **bugs** or **problems** with GeoHD, please create a post using our package [issue tracker](). Please provide a clear and concise description of the problem, with images or code-snippets where appropriate. We will do our best to address these problems as fast and efficiently as possible.
+If you encounter any **bugs** or **problems** with GeoHD, please create a post using our package [issue tracker](https://github.com/yan-yuchen/GeoHD/issues). Please provide a clear and concise description of the problem, with images or code-snippets where appropriate. We will do our best to address these problems as fast and efficiently as possible.
 
 ## Contribute
 
 The authors of the GeoHD package welcome external contributions to the source code. This process will be easiest if users adhere to the contribution policy:
 
-* Open an issue on the package [issue tracker]() clearly describing your intentions on code modifications or additions
+* Open an issue on the package [issue tracker](https://github.com/yan-yuchen/GeoHD/issues) clearly describing your intentions on code modifications or additions
 * Ensure your modifications or additions adhere to the existing standard of the GeoHD package, specifically detailed documentation for new methods (see existing methods for example documentation)
 * Test your modifications to ensure that the core functionality of the package has not been altered by running the unit tests 
 * Once the issue has been discussed with a package author, you may open a pull request containing your modifications
