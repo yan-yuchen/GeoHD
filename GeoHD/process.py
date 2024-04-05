@@ -45,7 +45,7 @@ def generate_density_raster(kde, xmin, ymin, xmax, ymax, pixel_size):
     z = kde(xy).reshape(x.shape)
     return z
 
-def process_shapefile(input_file_path, bandwidth=0.2, pixel_size=50):
+def process_shapefile(input_file_path, bandwidth=0.2, pixel_size=0.001):
     """
     Process a shapefile to generate a kernel density estimation raster.
 
@@ -85,7 +85,7 @@ def plot_density_raster(smoothed_density,output_data_path, xmin, ymin, xmax, yma
         xmax (float): Maximum x-coordinate of the bounding box.
         ymax (float): Maximum y-coordinate of the bounding box.
     """
-    plt.figure(figsize=(8, 8))
+    plt.figure(figsize=(6, 6))
     plt.imshow(smoothed_density, extent=[xmin, xmax, ymin, ymax], origin='lower', cmap='Purples')
     plt.colorbar(label='Density')
     plt.xlabel('Longitude')

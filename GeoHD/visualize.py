@@ -46,7 +46,7 @@ def visualize_shapefile(file_path, output_image_path='./output/point_data.png'):
     print(points_gdf.head())
 
     # Create a new figure and axis for plotting
-    fig, ax = plt.subplots(figsize=(7, 7))
+    fig, ax = plt.subplots(figsize=(8, 8))
 
     # Plot the point data
     points_gdf.plot(ax=ax, markersize=20, color='red', marker='o', alpha=0.7)

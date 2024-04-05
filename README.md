@@ -1,8 +1,8 @@
 # GeoHD
 
 ![python](https://img.shields.io/badge/python-3.11-black)
-![GitHub release](https://img.shields.io/badge/release-v0.1.3-blue)
-![pypi](https://img.shields.io/badge/pypi-v0.1.3-orange)
+![GitHub release](https://img.shields.io/badge/release-v0.1.5-blue)
+![pypi](https://img.shields.io/badge/pypi-v0.1.5-orange)
 ![license](https://img.shields.io/badge/license-GNU%20AGPLv3-green)
 
 [**Getting Started**](#getting-started)
@@ -39,7 +39,10 @@ Visualization of hotspots on real maps:
 visualize_shapefile('data.shp', output_image_path='custom_image.png')
 ```
 
-![Visualization of hotspots on real maps](./doc/1.png)
+<p align="center">
+  <img src="./doc/1.png" width="400" height="300"/>
+</p>
+
 
 Analytic Plane Point Patterns: Ripley G, Ripley F, Ripley J, Ripley K, Ripley L, etc. through the plotting function.
 
@@ -47,7 +50,28 @@ Analytic Plane Point Patterns: Ripley G, Ripley F, Ripley J, Ripley K, Ripley L,
 plot_g_function('data.shp')
 ```
 
-![Analytic Plane Point Patterns](./doc/2.png)
+<p align="center">
+  <img src="./doc/2.png" width="400" height="300"/>
+</p>
+
+The study area was divided into a quadrilateral (hexagonal) grid and fast visualization was achieved based on the density of point data within the divided area.
+
+```python
+create_cell_zones(area_file, crash_file)
+create_hex_grid_zones(area_file, crash_file)
+create_cell_heatmap(area_file, crash_file)
+create_hexagonal_heatmap(area_file, crash_file)
+```
+
+<p align="center">
+  <img src="./doc/3.png" width="400" height="300"/>
+  <img src="./doc/4.png" width="400" height="300"/>
+</p>
+
+<p align="center">
+  <img src="./doc/5.png" width="400" height="300"/>
+  <img src="./doc/6.png" width="400" height="300"/>
+</p>
 
 Realization of kernel density analysis with fixed bandwidth:
 
@@ -62,7 +86,10 @@ Kernel density analysis for realizing adaptive bandwidth:
 adaptiveKDE(shp_file,output_data_path)
 ```
 
-![AKDE](./doc/4.png)
+<p align="center">
+  <img src="./doc/8.png" width="400" height="300"/>
+</p>
+
 
 Hotspot Identification:
 
@@ -71,7 +98,10 @@ hotspots = extract_hotspots(density_data_path)
 visualize_hotspots(np.load(density_data_path), hotspots)
 ```
 
-![Hotspot](./doc/5.png)
+<p align="center">
+  <img src="./doc/9.png" width="400" height="300"/>
+</p>
+
 
 
 ## Issues

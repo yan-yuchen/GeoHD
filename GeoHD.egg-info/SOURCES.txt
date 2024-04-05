@@ -7,6 +7,7 @@ GeoHD/analyze.py
 GeoHD/process.py
 GeoHD/utils.py
 GeoHD/visualize.py
+GeoHD/zone.py
 GeoHD.egg-info/PKG-INFO
 GeoHD.egg-info/SOURCES.txt
 GeoHD.egg-info/dependency_links.txt
