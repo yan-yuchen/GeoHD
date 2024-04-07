@@ -42,6 +42,8 @@ Currently, GeoHD primarily includes the following functionalities:
 
 * Hotspot analysis using rectangular  grids and hexagonal grids: Implements statistical analysis of spatial point data based on matrix grids and hexagonal grids, providing clear visualization.
 
+The development of GeoHD fills the gap in universality and usability of current hotspot detection tools, offering a comprehensive and effective analysis tool for the urban research field. For the latest version of GeoHD and usage instructions, please refer to the following link: https://github.com/yan-yuchen/GeoHD.
+
 # Use Case
 
 
