@@ -52,6 +52,89 @@ def visualize_hotspots(density_data, hotspots):
     plt.legend()
     plt.show()
 
+def spectral_clustering_with_plot(points_shapefile, num_clusters=3, k=5, sigma=1):
+    """
+    Perform spectral clustering on a set of points from a shapefile and plot the clusters.
+
+    Args:
+    points_shapefile (str): Path to the shapefile containing point data.
+    num_clusters (int): Number of clusters to partition the data into.
+    k (int): Number of nearest neighbors to consider for constructing the adjacency matrix.
+    sigma (float): Sigma parameter for the Gaussian similarity function.
+
+    Returns:
+    np.array: Cluster labels for each point.
+    """
+
+    def gaussian_similarity_matrix(points, sigma=1):
+        n = len(points)
+        similarity_matrix = np.zeros((n, n))
+        for i in range(n):
+            for j in range(n):
+                similarity_matrix[i][j] = np.exp(-((points[i].x - points[j].x) ** 2 + (points[i].y - points[j].y) ** 2) / (2 * sigma ** 2))
+        return similarity_matrix
+
+    def adjacency_matrix(similarity_matrix, k):
+        n = len(similarity_matrix)
+        adjacency_matrix = np.zeros((n, n))
+        for i in range(n):
+            idx = np.argsort(similarity_matrix[i])[::-1][:k]
+            adjacency_matrix[i][idx] = similarity_matrix[i][idx]
+        return adjacency_matrix
+
+    def laplacian_matrix(adjacency_matrix):
+        degree_matrix = np.diag(np.sum(adjacency_matrix, axis=1))
+        laplacian_matrix = degree_matrix - adjacency_matrix
+        return laplacian_matrix
+
+    def compute_eigenvectors(laplacian_matrix, num_eigenvectors):
+        eigenvalues, eigenvectors = np.linalg.eig(laplacian_matrix)
+        sorted_indices = np.argsort(eigenvalues)
+        sorted_eigenvalues = eigenvalues[sorted_indices]
+        sorted_eigenvectors = eigenvectors[:, sorted_indices]
+        return sorted_eigenvalues, sorted_eigenvectors[:, :num_eigenvectors]
+
+    def kmeans_clustering(data, k, max_iters=100):
+        centroids = data[np.random.choice(data.shape[0], k, replace=False)]
+        for _ in range(max_iters):
+            distances = np.sqrt(((data - centroids[:, np.newaxis])**2).sum(axis=2))
+            labels = np.argmin(distances, axis=0)
+            new_centroids = np.array([data[labels == i].mean(axis=0) for i in range(k)])
+            if np.all(centroids == new_centroids):
+                break
+            centroids = new_centroids
+        return labels
+
+    # Load shapefile point data
+    points_gdf = gpd.read_file(points_shapefile)
+
+    # Compute similarity matrix
+    similarity_matrix = gaussian_similarity_matrix(points_gdf.geometry, sigma)
+
+    # Construct adjacency matrix
+    adj_matrix = adjacency_matrix(similarity_matrix, k)
+
+    # Compute Laplacian matrix
+    laplacian_matrix = laplacian_matrix(adj_matrix)
+
+    # Compute eigenvectors of Laplacian matrix
+    eigenvalues, eigenvectors = compute_eigenvectors(laplacian_matrix, num_clusters)
+
+    # K-means clustering using eigenvectors
+    cluster_labels = kmeans_clustering(eigenvectors, num_clusters)
+
+    # Plot clusters
+    fig, ax = plt.subplots(figsize=(10, 10))
+    colors = ['r', 'g', 'b']
+    for i in range(cluster_labels.max() + 1):
+        ax.scatter(points_gdf.geometry.x[cluster_labels == i], points_gdf.geometry.y[cluster_labels == i], c=colors[i], label=f'Cluster {i+1}')
+    ax.legend()
+    plt.title('Spectral Clustering')
+    plt.xlabel('Longitude')
+    plt.ylabel('Latitude')
+    plt.show()
+
+    return cluster_labels
 
 def km_euclidean_distance(x1, x2):
     """Calculate the Euclidean distance between two points for K-Means."""
@@ -193,8 +276,6 @@ def db_visualize_clusters(X, labels):
     plt.legend()
     plt.grid(True)
     plt.show()
-
-
 
 
 
