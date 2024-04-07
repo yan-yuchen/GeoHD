@@ -18,8 +18,7 @@ affiliations:
  - name: School of Transportation Science and Engineering, Harbin Institute of Technology, China
    index: 1
 date: 10 April 2024
-bibliography: [paper.bib]
-
+bibliography: paper.bib
 ---
 
 # Summary
