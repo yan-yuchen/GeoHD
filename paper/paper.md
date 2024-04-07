@@ -30,6 +30,8 @@ In the field of urban data analysis, the spatial distribution of research object
 
 GeoHD is a Python toolbox designed for the detection, visualization, and analysis of geographical spatial hotspots. Its primary objective is to provide a user-friendly tool applicable across various urban research backgrounds for hotspot detection and analysis. The working principle of GeoHD is illustrated in Figure 1. Initially, GeoHD conducts clear visualization and statistical analysis on input data to obtain Kernel Density Estimation (KDE) results. Subsequently, it employs a window analysis method to compute the maximum value surface of raster data pixels, followed by performing algebraic subtraction between the density field surface and the maximum value surface to obtain the difference result, i.e., the non-negative value surface. At this stage, positions with zero values in the difference result within each window represent the locations of local hotspots in the current area. After completing the window analysis, a reclassification algorithm is utilized to classify extreme value areas and areas excluding extreme values into two categories. Ultimately, the extreme value areas obtained through this process represent the hotspots of events occurring within the current area.
 
+![Working principle of GeoHD](JOSS.png){ width=80% }
+
 Currently, GeoHD primarily includes the following functionalities:
 
 * Visualization of the true distribution of research data: Enables visualization of the true geographical spatial positions of point data by inputting point data.
