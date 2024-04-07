@@ -11,9 +11,9 @@ authors:
     orcid: 0000-0002-0245-2241
     equal-contrib: true
     affiliation: "1" 
-- name: Yuxin Wang
-   orcid: 0009-0004-7063-3935
-   affiliation: "1"
+  - name: Yuxin Wang
+    orcid: 0009-0004-7063-3935
+    affiliation: "1"
 affiliations:
  - name: School of Transportation Science and Engineering, Harbin Institute of Technology, China
    index: 1
