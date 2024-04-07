@@ -46,7 +46,7 @@ The development of GeoHD fills the gap in universality and usability of current 
 
 # Use Case
 
-
+A recent study on adaptive hotspot detection in smart cities has demonstrated the practicality of the GeoHD toolkit. This research utilized GPS data from taxis in Harbin and crime data from New York City for hotspot detection. The study indicated that this hotspot detection method can accurately identify hotspot areas in urban environments, rather than simply partitioning hotspot regions. This approach dynamically adjusts parameters based on the spatial distribution characteristics of the data, thereby enhancing the accuracy and relevance of hotspot detection. This enables researchers to conduct more precise small-scale analyses and make timely event-specific preparations and deployments based on the specific geographic locations of hotspots.
 
 
 # Citations
