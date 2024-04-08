@@ -341,7 +341,117 @@ def hierarchical_clustering(points_shapefile, num_clusters):
 
     return cluster_labels
 
+def louvain_euclidean_distance(p1, p2):
+    """
+    Calculate the Euclidean distance between two points.
 
+    Args:
+    p1 (tuple): Coordinates of the first point.
+    p2 (tuple): Coordinates of the second point.
+
+    Returns:
+    float: Euclidean distance between the two points.
+    """
+    return np.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
+
+def louvain_community_detection(points_shapefile, max_iterations=100, tolerance=1e-6):
+    """
+    Perform community detection on a set of points from a shapefile using the Louvain algorithm.
+
+    Args:
+    points_shapefile (str): Path to the shapefile containing point data.
+    max_iterations (int): Maximum number of iterations for the Louvain algorithm.
+    tolerance (float): Convergence threshold for the Louvain algorithm.
+
+    Returns:
+    list: Community labels for each point.
+    """
+    # Load shapefile point data
+    points_gdf = gpd.read_file(points_shapefile)
+    num_points = len(points_gdf)
+
+    # Extract coordinates from GeoDataFrame
+    coordinates = np.array(points_gdf.geometry.apply(lambda point: (point.x, point.y)))
+
+    # Create adjacency matrix
+    adjacency_matrix = np.zeros((num_points, num_points))
+    for i in range(num_points):
+        for j in range(i+1, num_points):
+            # Calculate Euclidean distance as edge weight
+            dist = louvain_euclidean_distance(coordinates[i], coordinates[j])
+            # Assign weight to adjacency matrix
+            adjacency_matrix[i, j] = dist
+            adjacency_matrix[j, i] = dist
+
+    # Initialize community labels for each point
+    community_labels = list(range(num_points))
+
+    # Louvain algorithm
+    prev_modularity = -1
+    for _ in range(max_iterations):
+        # Initialize change flag and modularity
+        change = False
+        modularity = 0
+
+        # Iterate over each point
+        for i in range(num_points):
+            # Calculate the modularity change by moving the point to its neighboring communities
+            current_community = community_labels[i]
+            best_community = current_community
+            max_modularity_change = 0
+            
+            # Find neighboring communities
+            neighbors = np.unique([community_labels[j] for j in np.nonzero(adjacency_matrix[i])[0]])
+            
+            # Calculate modularity change for each neighboring community
+            for neighbor in neighbors:
+                if neighbor != current_community:
+                    # Calculate modularity change
+                    modularity_change = 0
+                    for j in range(num_points):
+                        if community_labels[j] == current_community:
+                            modularity_change -= adjacency_matrix[i, j]
+                        elif community_labels[j] == neighbor:
+                            modularity_change += adjacency_matrix[i, j]
+                    
+                    # Update best community if modularity change is positive
+                    if modularity_change > max_modularity_change:
+                        max_modularity_change = modularity_change
+                        best_community = neighbor
+            
+            # Move the point to the community with the maximum modularity change
+            if best_community != current_community:
+                community_labels[i] = best_community
+                change = True
+        
+        # Calculate modularity
+        for i in range(num_points):
+            for j in range(num_points):
+                if community_labels[i] == community_labels[j]:
+                    modularity += adjacency_matrix[i, j]
+
+        # Check for convergence
+        if abs(modularity - prev_modularity) < tolerance:
+            break
+        prev_modularity = modularity
+
+        # If no change occurred, stop iterating
+        if not change:
+            break
+
+    # Plot communities
+    fig, ax = plt.subplots(figsize=(10, 10))
+    colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k']  # Color palette for communities
+    for i, community in enumerate(np.unique(community_labels)):
+        community_points = points_gdf.geometry[np.array(community_labels) == community]
+        ax.scatter([point.x for point in community_points], [point.y for point in community_points], c=colors[i % len(colors)], label=f'Community {i+1}')
+    ax.legend()
+    plt.title('Community Detection using Louvain Algorithm')
+    plt.xlabel('Longitude')
+    plt.ylabel('Latitude')
+    plt.show()
+
+    return community_labels
 
 def GMM_gaussian(x, mean, cov):
     """
