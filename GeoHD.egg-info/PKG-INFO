@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: GeoHD
-Version: 0.1.7
+Version: 0.1.8
 Summary: A Python toolkit for geospatial hotspot detection, Avisualization, and analysis using urban data
 Home-page: https://github.com/yan-yuchen/GeoHD
 Author: Yuchen Yan

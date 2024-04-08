@@ -277,6 +277,233 @@ def db_visualize_clusters(X, labels):
     plt.grid(True)
     plt.show()
 
+def hierarchical_clustering(points_shapefile, num_clusters):
+    """
+    Perform hierarchical clustering on a set of points from a shapefile.
+
+    Args:
+    points_shapefile (str): Path to the shapefile containing point data.
+    num_clusters (int): Number of clusters to partition the data into.
+
+    Returns:
+    list: Cluster labels for each point.
+    """
+
+    # Load shapefile point data
+    points_gdf = gpd.read_file(points_shapefile)
+    points = list(zip(points_gdf.geometry.x, points_gdf.geometry.y))
+
+    # Calculate pairwise distances between points
+    n = len(points)
+    distances = [[0] * n for _ in range(n)]
+    for i in range(n):
+        for j in range(n):
+            distances[i][j] = ((points[i][0] - points[j][0]) ** 2 + (points[i][1] - points[j][1]) ** 2) ** 0.5
+
+    # Initialize clusters
+    clusters = [[i] for i in range(n)]
+
+    # Merge closest clusters until specified number of clusters is reached
+    while len(clusters) > num_clusters:
+        min_dist = float('inf')
+        merge_i, merge_j = -1, -1
+
+        # Find closest pair of clusters
+        for i in range(len(clusters)):
+            for j in range(i + 1, len(clusters)):
+                for point_i in clusters[i]:
+                    for point_j in clusters[j]:
+                        if distances[point_i][point_j] < min_dist:
+                            min_dist = distances[point_i][point_j]
+                            merge_i, merge_j = i, j
+
+        # Merge the two closest clusters
+        clusters[merge_i].extend(clusters[merge_j])
+        del clusters[merge_j]
+
+    # Assign cluster labels to each point
+    cluster_labels = [0] * n
+    for i, cluster in enumerate(clusters):
+        for point in cluster:
+            cluster_labels[point] = i
+
+    # Plot clusters
+    fig, ax = plt.subplots(figsize=(10, 10))
+    colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k']  # Color palette for clusters
+    for i in range(len(clusters)):
+        cluster_points = [points[j] for j in clusters[i]]
+        ax.scatter([point[0] for point in cluster_points], [point[1] for point in cluster_points], c=colors[i % len(colors)], label=f'Cluster {i+1}')
+    ax.legend()
+    plt.title('Hierarchical Clustering')
+    plt.xlabel('Longitude')
+    plt.ylabel('Latitude')
+    plt.show()
+
+    return cluster_labels
+
+
+
+def GMM_gaussian(x, mean, cov):
+    """
+    Calculate the value of the Gaussian distribution at point x.
+
+    Args:
+    x (np.array): The point at which to evaluate the Gaussian.
+    mean (np.array): The mean of the Gaussian distribution.
+    cov (np.array): The covariance matrix of the Gaussian distribution.
+
+    Returns:
+    float: The value of the Gaussian distribution at point x.
+    """
+    n = len(x)
+    coef = 1 / ((2 * np.pi) ** (n / 2) * np.linalg.det(cov) ** 0.5)
+    exponent = -0.5 * (x - mean).T @ np.linalg.inv(cov) @ (x - mean)
+    return coef * np.exp(exponent)
+
+def GMM_initialize_parameters(data, num_clusters):
+    """
+    Initialize the parameters of the GMM.
+
+    Args:
+    data (np.array): The data points.
+    num_clusters (int): The number of clusters.
+
+    Returns:
+    tuple: Tuple containing means, covariances, and priors for each cluster.
+    """
+    n, m = data.shape
+    # Randomly select data points as initial means
+    means = data[np.random.choice(n, num_clusters, replace=False)]
+    # Use empirical covariance matrix as initial covariance for each cluster
+    covariances = [np.cov(data.T) for _ in range(num_clusters)]
+    # Use uniform prior probability
+    priors = [1 / num_clusters] * num_clusters
+    return means, covariances, priors
+    
+
+def GMM_expectation(data, means, covariances, priors):
+    """
+    Perform the expectation step of the EM algorithm.
+
+    Args:
+    data (np.array): The data points.
+    means (list): List of mean vectors for each cluster.
+    covariances (list): List of covariance matrices for each cluster.
+    priors (list): List of prior probabilities for each cluster.
+
+    Returns:
+    np.array: Array of responsibilities for each data point and cluster.
+    """
+    num_clusters = len(means)
+    n = len(data)
+    responsibilities = np.zeros((n, num_clusters))
+    for i in range(n):
+        for j in range(num_clusters):
+            responsibilities[i, j] = priors[j] * GMM_gaussian(data[i], means[j], covariances[j])
+        responsibilities[i, :] /= np.sum(responsibilities[i, :])
+    return responsibilities
+
+def GMM_maximization(data, responsibilities):
+    """
+    Perform the maximization step of the EM algorithm.
+
+    Args:
+    data (np.array): The data points.
+    responsibilities (np.array): Array of responsibilities for each data point and cluster.
+
+    Returns:
+    tuple: Tuple containing updated means, covariances, and priors for each cluster.
+    """
+    n, m = data.shape
+    num_clusters = responsibilities.shape[1]
+    means = np.zeros((num_clusters, m))
+    covariances = [np.zeros((m, m)) for _ in range(num_clusters)]
+    priors = np.zeros(num_clusters)
+
+    for j in range(num_clusters):
+        for i in range(n):
+            means[j] += responsibilities[i, j] * data[i]
+            covariances[j] += responsibilities[i, j] * np.outer(data[i] - means[j], data[i] - means[j])
+            priors[j] += responsibilities[i, j]
+        means[j] /= np.sum(responsibilities[:, j])
+        covariances[j] /= np.sum(responsibilities[:, j])
+        priors[j] /= n
+
+    return means, covariances, priors
+
+def GMM_compute_log_likelihood(data, means, covariances, priors):
+    """
+    Compute the log likelihood of the data under the GMM model.
+
+    Args:
+    data (np.array): The data points.
+    means (list): List of mean vectors for each cluster.
+    covariances (list): List of covariance matrices for each cluster.
+    priors (list): List of prior probabilities for each cluster.
+
+    Returns:
+    float: The log likelihood of the data under the GMM model.
+    """
+    log_likelihood = 0
+    for x in data:
+        likelihood = sum([prior * GMM_gaussian(x, mean, cov) for mean, cov, prior in zip(means, covariances, priors)])
+        log_likelihood += np.log(likelihood)
+    return log_likelihood
+
+def GMM_clustering(points_shapefile, num_clusters, max_iterations=100, tolerance=1e-6):
+    """
+    Perform GMM clustering on a set of points from a shapefile.
+
+    Args:
+    points_shapefile (str): Path to the shapefile containing point data.
+    num_clusters (int): Number of clusters to partition the data into.
+    max_iterations (int): Maximum number of iterations for the EM algorithm.
+    tolerance (float): Convergence threshold for the EM algorithm.
+
+    Returns:
+    np.array: Cluster labels for each point.
+    """
+    # Load shapefile point data
+    points_gdf = gpd.read_file(points_shapefile)
+    data = np.array([[point.x, point.y] for point in points_gdf.geometry])
+
+    # Initialize parameters
+    means, covariances, priors = GMM_initialize_parameters(data, num_clusters)
+
+    # EM algorithm
+    prev_log_likelihood = float('-inf')
+    for iteration in range(max_iterations):
+        # Expectation step
+        responsibilities = GMM_expectation(data, means, covariances, priors)
+
+        # Maximization step
+        means, covariances, priors = GMM_maximization(data, responsibilities)
+
+        # Compute log likelihood
+        log_likelihood = GMM_compute_log_likelihood(data, means, covariances, priors)
+
+        # Check for convergence
+        if log_likelihood - prev_log_likelihood < tolerance:
+            break
+        prev_log_likelihood = log_likelihood
+
+    # Assign cluster labels
+    cluster_labels = np.argmax(responsibilities, axis=1)
+
+    # Plot clusters
+    fig, ax = plt.subplots(figsize=(10, 10))
+    colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k']  # Color palette for clusters
+    for i in range(num_clusters):
+        cluster_points = data[cluster_labels == i]
+        ax.scatter(cluster_points[:, 0], cluster_points[:, 1], c=colors[i % len(colors)], label=f'Cluster {i+1}')
+    ax.legend()
+    plt.title('GMM Clustering')
+    plt.xlabel('Longitude')
+    plt.ylabel('Latitude')
+    plt.show()
+
+    return cluster_labels
+
 
 
 # Example usage:
