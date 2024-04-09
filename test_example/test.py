@@ -1,6 +1,7 @@
 from GeoHD import *
 import os
 
+
 # Define the name of the folder to be created
 folder_name = 'output'
 # Check if the folder exists, if not, create it
