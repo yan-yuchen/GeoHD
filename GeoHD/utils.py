@@ -453,6 +453,115 @@ def louvain_community_detection(points_shapefile, max_iterations=100, tolerance=
 
     return community_labels
 
+def op_euclidean_distance(p1, p2):
+    """
+    Calculate the Euclidean distance between two points.
+
+    Args:
+    p1 (tuple): Coordinates of the first point.
+    p2 (tuple): Coordinates of the second point.
+
+    Returns:
+    float: Euclidean distance between the two points.
+    """
+    return np.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
+
+def op_optics_cluster(points_gdf, epsilon, min_pts):
+    """
+    Perform clustering on a set of points using the OPTICS algorithm.
+
+    Args:
+    points_gdf (geopandas.GeoDataFrame): GeoDataFrame containing point data.
+    epsilon (float): Maximum distance to consider points as neighbors.
+    min_pts (int): Minimum number of points required to form a cluster.
+
+    Returns:
+    list: Cluster labels for each point.
+    """
+    num_points = len(points_gdf)
+    # Extract coordinates from GeoDataFrame
+    coordinates = np.array(points_gdf.geometry.apply(lambda point: (point.x, point.y)))
+    # Initialize reachability distances and cluster labels
+    reachability_distances = np.full(num_points, np.inf)
+    cluster_labels = np.full(num_points, -1)
+    # Iterate over each point
+    for i in range(num_points):
+        # Calculate distances to all other points
+        distances = [op_euclidean_distance(coordinates[i], coordinates[j]) for j in range(num_points)]
+        # Find neighbors within epsilon distance
+        neighbors = [j for j in range(num_points) if distances[j] <= epsilon and j != i]
+        if len(neighbors) >= min_pts:
+            # If core point, update reachability distances of neighbors
+            for neighbor in neighbors:
+                core_dist = max(distances[j] for j in neighbors if j != neighbor)
+                reachability_distances[neighbor] = min(core_dist, distances[neighbor])
+        # Assign point to a cluster if not already assigned
+        if cluster_labels[i] == -1:
+            if len(neighbors) >= min_pts:
+                # If core point, expand cluster
+                cluster_id = i
+                while True:
+                    cluster_labels[cluster_id] = cluster_id
+                    neighbors = [j for j in range(num_points) if distances[j] <= epsilon and j != cluster_id]
+                    if len(neighbors) == 0:
+                        break
+                    # Find next core point with minimum reachability distance
+                    next_core = min(neighbors, key=lambda x: reachability_distances[x])
+                    core_dist = max(distances[j] for j in neighbors if j != next_core)
+                    if reachability_distances[next_core] > core_dist:
+                        # If next core point is not directly reachable, mark it as outlier
+                        cluster_labels[next_core] = -1
+                    else:
+                        # If next core point is directly reachable, expand cluster
+                        cluster_id += 1
+                        cluster_labels[next_core] = cluster_id
+                        cluster_id = next_core
+            else:
+                # If outlier point, mark as noise
+                cluster_labels[i] = -1
+    return cluster_labels
+
+def op_plot_clusters(points_gdf, cluster_labels):
+    """
+    Plot clusters on a map.
+
+    Args:
+    points_gdf (geopandas.GeoDataFrame): GeoDataFrame containing point data.
+    cluster_labels (list): Cluster labels for each point.
+    """
+    fig, ax = plt.subplots(figsize=(10, 10))
+    colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k']  # Color palette for clusters
+    for cluster_id in np.unique(cluster_labels):
+        if cluster_id == -1:
+            # Plot outliers as black
+            outlier_points = points_gdf.geometry[cluster_labels == -1]
+            ax.scatter([point.x for point in outlier_points], [point.y for point in outlier_points], c='k', label='Outliers')
+        else:
+            # Plot cluster points with different colors
+            cluster_points = points_gdf.geometry[cluster_labels == cluster_id]
+            ax.scatter([point.x for point in cluster_points], [point.y for point in cluster_points], c=colors[cluster_id % len(colors)], label=f'Cluster {cluster_id}')
+    ax.legend()
+    plt.title('Clustering using OPTICS Algorithm')
+    plt.xlabel('Longitude')
+    plt.ylabel('Latitude')
+    plt.show()
+
+def op_optics_clustering(points_shapefile, epsilon, min_pts):
+    """
+    Perform clustering on a set of points from a shapefile using the OPTICS algorithm and plot the clusters.
+
+    Args:
+    points_shapefile (str): Path to the shapefile containing point data.
+    epsilon (float): Maximum distance to consider points as neighbors.
+    min_pts (int): Minimum number of points required to form a cluster.
+    """
+    # Load shapefile point data
+    points_gdf = gpd.read_file(points_shapefile)
+    # Perform OPTICS clustering
+    cluster_labels = op_optics_cluster(points_gdf, epsilon, min_pts)
+    # Plot clusters
+    op_plot_clusters(points_gdf, cluster_labels)
+
 def GMM_gaussian(x, mean, cov):
     """
     Calculate the value of the Gaussian distribution at point x.
