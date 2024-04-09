@@ -19,6 +19,7 @@ visualize_shapefile('../data/crash.shp', output_image_path='../output/custom_ima
 # Analytic Plane Point Patterns: Ripley G, Ripley F, Ripley J, Ripley K, Ripley L, etc. through the plotting function.
 plot_g_function('../data/crash.shp')
 
+
 # Realization of kernel density analysis with fixed bandwidth:
 input_file_path = '../data/crash.shp'  
 output_data_path = '../output/density_data.npy'
