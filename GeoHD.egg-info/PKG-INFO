@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: GeoHD
-Version: 0.1.9
+Version: 0.2.1
 Summary: A Python toolkit for geospatial hotspot detection, Avisualization, and analysis using urban data
 Home-page: https://github.com/yan-yuchen/GeoHD
 Author: Yuchen Yan
@@ -18,8 +18,8 @@ Requires-Dist: h3
 # GeoHD
 
 ![python](https://img.shields.io/badge/python-3.11-black)
-![GitHub release](https://img.shields.io/badge/release-v0.1.5-blue)
-![pypi](https://img.shields.io/badge/pypi-v0.1.5-orange)
+![GitHub release](https://img.shields.io/badge/release-v0.1.9-blue)
+![pypi](https://img.shields.io/badge/pypi-v0.1.9-orange)
 ![license](https://img.shields.io/badge/license-GNU%20AGPLv3-green)
 
 [**Getting Started**](#getting-started)
@@ -135,6 +135,7 @@ The authors of the GeoHD package welcome external contributions to the source co
 * Once the issue has been discussed with a package author, you may open a pull request containing your modifications
 
 ## Citation
+
 
 
 
