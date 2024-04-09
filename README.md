@@ -1,8 +1,8 @@
 # GeoHD
 
 ![python](https://img.shields.io/badge/python-3.11-black)
-![GitHub release](https://img.shields.io/badge/release-v0.1.9-blue)
-![pypi](https://img.shields.io/badge/pypi-v0.1.9-orange)
+![GitHub release](https://img.shields.io/badge/release-v0.2.1-blue)
+![pypi](https://img.shields.io/badge/pypi-v0.2.1-orange)
 ![license](https://img.shields.io/badge/license-GNU%20AGPLv3-green)
 
 [**Getting Started**](#getting-started)
