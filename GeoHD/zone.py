@@ -232,8 +232,6 @@ def create_hexagonal_heatmap(area_file, crash_file, resolution=8):
 
 
 
-
-
 # Example usage
 # create_cell_zones('./data/area.shp', './data/crash.shp')
 
