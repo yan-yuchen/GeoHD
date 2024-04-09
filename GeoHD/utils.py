@@ -795,7 +795,6 @@ def hdbscan_clustering(points_shapefile, min_samples, min_cluster_size):
     plot_clusters(points_gdf, cluster_labels)
 
 
-
 # Example usage:
 if __name__ == "__main__":
     density_data_path = './output/AKDE_density_grid.npy'
