@@ -26,6 +26,7 @@ output_data_path = '../output/density_data.npy'
 density_raster = process_shapefile(input_file_path)
 plot_density_raster(density_raster,output_data_path, *gpd.read_file(input_file_path).total_bounds)
 
+
 # Kernel density analysis for realizing adaptive bandwidth:
 shp_file = '../data/crash.shp'  
 output_data_path = '../output/AKDE_density_data.npy'
