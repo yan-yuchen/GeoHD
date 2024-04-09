@@ -723,6 +723,77 @@ def GMM_clustering(points_shapefile, num_clusters, max_iterations=100, tolerance
 
     return cluster_labels
 
+def hdbscan_clustering(points_shapefile, min_samples, min_cluster_size):
+    """
+    Perform clustering on a set of points from a shapefile using the HDBSCAN algorithm and plot the clusters.
+
+    Args:
+    points_shapefile (str): Path to the shapefile containing point data.
+    min_samples (int): The number of samples in a neighborhood for a point to be considered a core point.
+    min_cluster_size (int): The minimum number of points required to form a cluster.
+    """
+    # Define a function to calculate Euclidean distance between two points
+    def euclidean_distance(p1, p2):
+        return np.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
+
+    # Define a function to expand a cluster starting from a core point
+    def expand_cluster(i, distances, cluster_labels, cluster_id, min_cluster_size):
+        cluster_labels[i] = cluster_id
+        seeds = [j for j in range(len(cluster_labels)) if distances[i, j] < min_samples]
+        while seeds:
+            j = seeds.pop(0)
+            if cluster_labels[j] == -1:
+                cluster_labels[j] = cluster_id
+                if np.sum(distances[j] < min_samples) >= min_samples:
+                    seeds.extend([k for k in range(len(cluster_labels)) if distances[j, k] < min_samples])
+            elif cluster_labels[j] == 0:
+                cluster_labels[j] = cluster_id
+
+    # Define a function to plot clusters on a map
+    def plot_clusters(points_gdf, cluster_labels):
+        fig, ax = plt.subplots(figsize=(10, 10))
+        colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k']
+        for cluster_id in np.unique(cluster_labels):
+            if cluster_id == -1:
+                outlier_points = points_gdf.geometry[cluster_labels == -1]
+                ax.scatter([point.x for point in outlier_points], [point.y for point in outlier_points], c='k', label='Outliers')
+            else:
+                cluster_points = points_gdf.geometry[cluster_labels == cluster_id]
+                ax.scatter([point.x for point in cluster_points], [point.y for point in cluster_points], c=colors[cluster_id % len(colors)], label=f'Cluster {cluster_id}')
+        ax.legend()
+        plt.title('Clustering using HDBSCAN Algorithm')
+        plt.xlabel('Longitude')
+        plt.ylabel('Latitude')
+        plt.show()
+
+    # Load shapefile point data
+    points_gdf = gpd.read_file(points_shapefile)
+    num_points = len(points_gdf)
+    coordinates = np.array(points_gdf.geometry.apply(lambda point: (point.x, point.y)))
+
+    # Compute pairwise distances
+    distances = np.zeros((num_points, num_points))
+    for i in range(num_points):
+        for j in range(i+1, num_points):
+            distances[i, j] = euclidean_distance(coordinates[i], coordinates[j])
+            distances[j, i] = distances[i, j]
+
+    # Compute core points
+    core_points = np.sum(distances < min_samples, axis=1) >= min_samples
+
+    # Initialize cluster labels
+    cluster_labels = np.full(num_points, -1)
+    cluster_id = 0
+
+    # Iterate over each point
+    for i in range(num_points):
+        if cluster_labels[i] == -1 and core_points[i]:
+            cluster_id += 1
+            expand_cluster(i, distances, cluster_labels, cluster_id, min_cluster_size)
+
+    # Plot clusters
+    plot_clusters(points_gdf, cluster_labels)
+
 
 
 # Example usage:
