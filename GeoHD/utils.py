@@ -724,7 +724,6 @@ def GMM_clustering(points_shapefile, num_clusters, max_iterations=100, tolerance
     return cluster_labels
 
 
-
 # Example usage:
 if __name__ == "__main__":
     density_data_path = './output/AKDE_density_grid.npy'
