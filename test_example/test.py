@@ -32,6 +32,7 @@ shp_file = '../data/crash.shp'
 output_data_path = '../output/AKDE_density_data.npy'
 adaptiveKDE(shp_file,output_data_path)
 
+
 # Hotspot Identification:
 density_data_path = '../output/AKDE_density_data.npy'
 hotspots = extract_hotspots(density_data_path)
