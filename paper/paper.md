@@ -13,6 +13,9 @@ authors:
   - name: Yuxin Wang
     orcid: 0009-0004-7063-3935
     affiliation: "1"
+  - name: Wei Quan
+    orcid: 0000-0001-5341-9268
+    affiliation: "1"
 affiliations:
  - name: School of Transportation Science and Engineering, Harbin Institute of Technology, China
    index: 1
