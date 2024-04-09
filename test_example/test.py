@@ -11,6 +11,7 @@ if not os.path.exists(folder_name):
 else:
     print(f"Folder '{folder_name}' already exists.")
 
+
 # Visualization of hotspots on real maps:
 visualize_shapefile('../data/crash.shp', output_image_path='../output/custom_image.png')
 
