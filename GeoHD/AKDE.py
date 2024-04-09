@@ -191,6 +191,8 @@ def plot_density_grid(points, h, output_data_path,resolution=1000):
     plt.legend()
     plt.show()
 
+
+
 # Example usage:
 if __name__ == "__main__":
     import os
