@@ -14,6 +14,7 @@ else:
 # Visualization of hotspots on real maps:
 visualize_shapefile('../data/crash.shp', output_image_path='../output/custom_image.png')
 
+
 # Analytic Plane Point Patterns: Ripley G, Ripley F, Ripley J, Ripley K, Ripley L, etc. through the plotting function.
 plot_g_function('../data/crash.shp')
 
