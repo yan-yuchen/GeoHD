@@ -38,6 +38,7 @@ density_data_path = '../output/AKDE_density_data.npy'
 hotspots = extract_hotspots(density_data_path)
 visualize_hotspots(np.load(density_data_path), hotspots)
 
+
 # The study area was divided into a quadrilateral (hexagonal) grid and fast visualization was achieved based on the density of point data within the divided area.
 create_cell_zones('../data/area.shp', '../data/crash.shp')
 create_hex_grid_zones('../data/area.shp', '../data/crash.shp')
