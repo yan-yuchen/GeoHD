@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import geopandas as gpd
+import pandas as pd
 from sklearn.neighbors import NearestNeighbors
 from sklearn.metrics import pairwise_distances
 from sklearn.cluster import KMeans
@@ -8,6 +9,166 @@ from sklearn.metrics import pairwise_distances
 from scipy.spatial import Voronoi, voronoi_plot_2d
 import matplotlib.pyplot as plt
 from scipy.stats import multivariate_normal
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.cluster import KMeans
+from sklearn.manifold import TSNE
+
+# Function to read a Shapefile and return a GeoDataFrame
+def read_shapefile(shapefile_path):
+    """
+    Reads a Shapefile and returns a GeoDataFrame.
+
+    Parameters:
+    - shapefile_path (str): The path to the Shapefile directory.
+
+    Returns:
+    - GeoDataFrame: The GeoDataFrame containing the Shapefile data.
+    """
+    gdf = gpd.read_file(shapefile_path)
+    return gdf
+
+# Function to visualize points in the GeoDataFrame using Matplotlib
+def visualize_points(gdf):
+    """
+    Visualizes the points in the GeoDataFrame.
+
+    Parameters:
+    - gdf (GeoDataFrame): The GeoDataFrame to be visualized.
+    """
+    fig, ax = plt.subplots(figsize=(15, 10))
+    gdf.plot(ax=ax, marker='o', markersize=5, color='blue', alpha=0.6)
+    plt.title('Point Data Visualization')
+    plt.xlabel('Longitude')
+    plt.ylabel('Latitude')
+    plt.grid(True)
+    plt.show()
+
+# Function to standardize features in the GeoDataFrame
+def standardize_features(gdf):
+    """
+    Standardizes the features in the GeoDataFrame.
+
+    Parameters:
+    - gdf (GeoDataFrame): The GeoDataFrame containing the point data.
+
+    Returns:
+    - DataFrame: A DataFrame with standardized features.
+    """
+    features = gdf.drop(['geometry'], axis=1)
+    scaler = StandardScaler()
+    standardized_features = scaler.fit_transform(features)
+    return pd.DataFrame(standardized_features, columns=features.columns)
+
+# Function to perform PCA and reduce dimensionality
+def perform_pca(standardized_features, n_components=2):
+    """
+    Performs Principal Component Analysis (PCA) to reduce dimensionality.
+
+    Parameters:
+    - standardized_features (array-like): The standardized features.
+    - n_components (int, optional): The number of components to keep. Defaults to 2.
+
+    Returns:
+    - DataFrame: A DataFrame with the reduced dimensions.
+    """
+    pca = PCA(n_components=n_components)
+    pca_result = pca.fit_transform(standardized_features)
+    return pd.DataFrame(pca_result, columns=[f'PC{i+1}' for i in range(n_components)])
+
+# Function to perform t-SNE for further dimensionality reduction and visualization
+def perform_tsne(pca_df, n_components=2):
+    """
+    Performs t-SNE to further reduce dimensionality and visualize the data.
+
+    Parameters:
+    - pca_df (DataFrame): The DataFrame with PCA results.
+    - n_components (int, optional): The number of components to keep. Defaults to 2.
+
+    Returns:
+    - DataFrame: A DataFrame with the t-SNE results.
+    """
+    tsne = TSNE(n_components=n_components, random_state=42)
+    tsne_result = tsne.fit_transform(pca_df)
+    return pd.DataFrame(tsne_result, columns=[f't-SNE {i+1}' for i in range(n_components)])
+
+# Function to perform clustering analysis using K-Means algorithm
+def cluster_analysis(tsne_df, n_clusters=5):
+    """
+    Performs clustering analysis on the t-SNE DataFrame using K-Means algorithm.
+
+    Parameters:
+    - tsne_df (DataFrame): The DataFrame with t-SNE results.
+    - n_clusters (int, optional): The number of clusters to form. Defaults to 5.
+
+    Returns:
+    - DataFrame: The DataFrame with additional columns for cluster labels.
+    """
+    kmeans = KMeans(n_clusters=n_clusters, random_state=42)
+    kmeans_labels = kmeans.fit_predict(tsne_df)
+    return pd.concat([tsne_df, pd.DataFrame(kmeans_labels, columns=['Cluster'])], axis=1)
+
+# Main function to execute the analysis pipeline
+def main():
+    # Shapefile path
+    shapefile_path = 'path_to_your_shapefile.shp'  # Replace with your Shapefile path
+
+    # Read Shapefile data
+    gdf = read_shapefile(shapefile_path)
+
+    # Visualize points from the GeoDataFrame
+    visualize_points(gdf)
+
+    # Standardize features in the GeoDataFrame
+    standardized_features = standardize_features(gdf)
+
+    # Perform PCA
+    pca_df = perform_pca(standardized_features)
+
+    # Visualize PCA results (if desired, can be skipped for a more concise visualization)
+    # visualize_pca(pca_df)  # This function is not defined in the provided code, but can be created similarly to visualize_points
+
+    # Perform t-SNE
+    tsne_df = perform_tsne(pca_df)
+
+    # Visualize t-SNE results
+    visualize_tsne(tsne_df)
+
+    # Perform clustering analysis
+    clustered_df = cluster_analysis(tsne_df)
+
+    # Visualize clustering results
+    visualize_clusters(clustered_df)
+
+# The main block is not defined in the provided code, so here is a placeholder for the visualization functions
+def visualize_pca(pca_df):
+    plt.figure(figsize=(10, 8))
+    plt.scatter(pca_df['PC1'], pca_df['PC2'], c=pca_df['Cluster'], cmap='viridis', edgecolor='k', s=50)
+    plt.xlabel('Principal Component 1')
+    plt.ylabel('Principal Component 2')
+    plt.colorbar(label='Cluster Label')
+    plt.title('PCA Results with Clustering')
+    plt.show()
+
+def visualize_tsne(tsne_df):
+    plt.figure(figsize=(10, 8))
+    plt.scatter(tsne_df[0], tsne_df[1], c=tsne_df['Cluster'], cmap='viridis', edgecolor='k', s=50)
+    plt.xlabel('t-SNE 1')
+    plt.ylabel('t-SNE 2')
+    plt.colorbar(label='Cluster Label')
+    plt.title('t-SNE Results')
+    plt.show()
+
+def visualize_clusters(clustered_df):
+    plt.figure(figsize=(10, 8))
+    plt.scatter(clustered_df[0], clustered_df[1], c=clustered_df['Cluster'], cmap='viridis', edgecolor='k', s=50)
+    plt.xlabel('t-SNE 1 (Clustered)')
+    plt.ylabel('t-SNE 2 (Clustered)')
+    plt.colorbar(label='Cluster Label')
+    plt.title('Clustered t-SNE Results')
+    plt.show()
+
+
 
 
 # Helper function to calculate Euclidean distance
