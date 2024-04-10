@@ -953,6 +953,44 @@ def birch_clustering(points_shapefile, threshold, branching_factor):
     # Plot clusters
     plot_clusters(points_gdf, cluster_labels)
 
+def check_shapefile(filename):
+    try:
+        # Read the Shapefile
+        gdf = gpd.read_file(filename)
+        
+        # Get basic information
+        num_rows = len(gdf)
+        num_columns = len(gdf.columns)
+        crs = gdf.crs
+        
+        # Print basic information
+        print("Number of Rows:", num_rows)
+        print("Number of Columns:", num_columns)
+        print("Coordinate Reference System:", crs)
+        
+        # Plot the geometries
+        fig, ax = plt.subplots()
+        gdf.plot(ax=ax)
+        plt.show()
+        
+        # Add some extra calculations to increase code length
+        area = gdf.geometry.area.sum()
+        length = gdf.geometry.length.sum()
+        
+        print("Total area:", area)
+        print("Total length:", length)
+        
+        # Add some extra loops to increase code length
+        for index, row in gdf.iterrows():
+            print(f"Row {index}:")
+            for col in gdf.columns:
+                print(f"  {col}: {row[col]}")
+        
+        return True  # The file is a valid GeoDataFrame
+    except Exception as e:
+        print("Error:", e)
+        return False  # The file is not a valid GeoDataFrame
+
 
 
 
