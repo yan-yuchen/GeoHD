@@ -277,6 +277,95 @@ def db_visualize_clusters(X, labels):
     plt.grid(True)
     plt.show()
 
+def sting_clustering(points_shapefile, grid_size):
+    """
+    Perform clustering on a set of points from a shapefile using the STING algorithm and plot the clusters.
+
+    Args:
+    points_shapefile (str): Path to the shapefile containing point data.
+    grid_size (float): Size of the grid cells.
+    """
+    def euclidean_distance(p1, p2):
+        """
+        Calculate the Euclidean distance between two points.
+
+        Args:
+        p1 (tuple): Coordinates of the first point.
+        p2 (tuple): Coordinates of the second point.
+
+        Returns:
+        float: Euclidean distance between the two points.
+        """
+        return np.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
+
+    def create_grid(points_gdf, grid_size):
+        """
+        Create a grid over the spatial extent of the points.
+
+        Args:
+        points_gdf (GeoDataFrame): GeoDataFrame containing point data.
+        grid_size (float): Size of the grid cells.
+
+        Returns:
+        list: List of grid cells.
+        """
+        xmin, ymin, xmax, ymax = points_gdf.total_bounds
+        xgrid = np.arange(xmin, xmax, grid_size)
+        ygrid = np.arange(ymin, ymax, grid_size)
+        grid = []
+        for x in xgrid:
+            for y in ygrid:
+                grid.append((x, y))
+        return grid
+
+    def calculate_statistics(points_gdf, grid):
+        """
+        Calculate statistics for each grid cell.
+
+        Args:
+        points_gdf (GeoDataFrame): GeoDataFrame containing point data.
+        grid (list): List of grid cells.
+
+        Returns:
+        dict: Dictionary mapping grid cells to statistics.
+        """
+        statistics = {}
+        for cell in grid:
+            cell_points = points_gdf[points_gdf.geometry.apply(lambda point: point.x >= cell[0] and point.x < cell[0] + grid_size and point.y >= cell[1] and point.y < cell[1] + grid_size)]
+            statistics[cell] = len(cell_points)
+        return statistics
+
+    def plot_clusters(points_gdf, clusters):
+        fig, ax = plt.subplots(figsize=(10, 10))
+        colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k']
+        for i, cluster in enumerate(clusters):
+            cluster_points = points_gdf.geometry[cluster]
+            ax.scatter([point.x for point in cluster_points], [point.y for point in cluster_points], c=colors[i % len(colors)], label=f'Cluster {i}')
+        ax.legend()
+        plt.title('Clustering using STING Algorithm')
+        plt.xlabel('Longitude')
+        plt.ylabel('Latitude')
+        plt.show()
+
+    # Load shapefile point data
+    points_gdf = gpd.read_file(points_shapefile)
+
+    # Create grid cells
+    grid = create_grid(points_gdf, grid_size)
+
+    # Calculate statistics for each grid cell
+    grid_statistics = calculate_statistics(points_gdf, grid)
+
+    # Find grid cells with high density
+    threshold = np.mean(list(grid_statistics.values())) + np.std(list(grid_statistics.values()))
+    dense_cells = [cell for cell, count in grid_statistics.items() if count >= threshold]
+
+    # Assign points to clusters
+    clusters = [points_gdf.geometry.apply(lambda point: point.x >= cell[0] and point.x < cell[0] + grid_size and point.y >= cell[1] and point.y < cell[1] + grid_size) for cell in dense_cells]
+
+    # Plot clusters
+    plot_clusters(points_gdf, clusters)
+    
 def hierarchical_clustering(points_shapefile, num_clusters):
     """
     Perform hierarchical clustering on a set of points from a shapefile.
@@ -793,6 +882,78 @@ def hdbscan_clustering(points_shapefile, min_samples, min_cluster_size):
 
     # Plot clusters
     plot_clusters(points_gdf, cluster_labels)
+
+def birch_clustering(points_shapefile, threshold, branching_factor):
+    """
+    Perform clustering on a set of points from a shapefile using the BIRCH algorithm and plot the clusters.
+
+    Args:
+    points_shapefile (str): Path to the shapefile containing point data.
+    threshold (int): The maximum number of points that can be stored in a node.
+    branching_factor (int): The maximum number of children nodes that a node can have.
+    """
+    class BIRCHNode:
+        def __init__(self, threshold, branching_factor):
+            self.threshold = threshold
+            self.branching_factor = branching_factor
+            self.children = []
+            self.points = []
+
+        def add_point(self, point):
+            self.points.append(point)
+            if len(self.points) > self.threshold:
+                self.split_node()
+
+        def split_node(self):
+            # Split points into subclusters
+            subclusters = self.cluster_points(self.points)
+            # Create child nodes for subclusters
+            for subcluster in subclusters:
+                self.children.append(BIRCHNode(self.threshold, self.branching_factor))
+                self.children[-1].points = subcluster
+
+        def cluster_points(self, points):
+            # Placeholder for clustering logic (e.g., K-means)
+            # For simplicity, we'll just divide the points into two subclusters
+            return [points[:len(points)//2], points[len(points)//2:]]
+
+    def plot_clusters(points_gdf, cluster_labels):
+        fig, ax = plt.subplots(figsize=(10, 10))
+        colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k']
+        for cluster_id in np.unique(cluster_labels):
+            cluster_points = points_gdf.geometry[cluster_labels == cluster_id]
+            ax.scatter([point.x for point in cluster_points], [point.y for point in cluster_points], c=colors[cluster_id % len(colors)], label=f'Cluster {cluster_id}')
+        ax.legend()
+        plt.title('Clustering using BIRCH Algorithm')
+        plt.xlabel('Longitude')
+        plt.ylabel('Latitude')
+        plt.show()
+
+    # Load shapefile point data
+    points_gdf = gpd.read_file(points_shapefile)
+    num_points = len(points_gdf)
+
+    # Extract coordinates from GeoDataFrame
+    coordinates = np.array(points_gdf.geometry.apply(lambda point: (point.x, point.y)))
+
+    # Initialize root node
+    root = BIRCHNode(threshold, branching_factor)
+
+    # Add points to the root node
+    for point in coordinates:
+        root.add_point(point)
+
+    # Assign cluster labels based on hierarchical structure
+    cluster_labels = np.zeros(num_points, dtype=int)
+    cluster_id = 0
+    for node in root.children:
+        cluster_labels[cluster_id:cluster_id+len(node.points)] = cluster_id
+        cluster_id += 1
+
+    # Plot clusters
+    plot_clusters(points_gdf, cluster_labels)
+
+
 
 
 
