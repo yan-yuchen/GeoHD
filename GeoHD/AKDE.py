@@ -191,6 +191,144 @@ def plot_density_grid(points, h, output_data_path,resolution=1000):
     plt.legend()
     plt.show()
 
+def adaptive_kernel_density_clustering(points_shapefile, bandwidth):
+    """
+    Perform clustering on a set of points from a shapefile using the adaptive kernel density algorithm and plot the clusters.
+
+    Args:
+    points_shapefile (str): Path to the shapefile containing point data.
+    bandwidth (float): Bandwidth parameter for the kernel density estimation.
+    """
+    def gaussian_kernel(distance, bandwidth):
+        return np.exp(-0.5 * (distance / bandwidth)**2) / (np.sqrt(2 * np.pi) * bandwidth)
+
+    def plot_clusters(points_gdf, cluster_labels):
+        """
+        Plot the clusters.
+
+        Args:
+        points_gdf (GeoDataFrame): GeoDataFrame containing point data.
+        cluster_labels (list): List of cluster labels for each point.
+        """
+        fig, ax = plt.subplots(figsize=(10, 10))
+        colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k']
+        for cluster_id in np.unique(cluster_labels):
+            cluster_points = points_gdf.geometry[cluster_labels == cluster_id]
+            ax.scatter([point.x for point in cluster_points], [point.y for point in cluster_points], c=colors[cluster_id % len(colors)], label=f'Cluster {cluster_id}')
+        ax.legend()
+        plt.title('Clustering using Adaptive Kernel Density Algorithm')
+        plt.xlabel('Longitude')
+        plt.ylabel('Latitude')
+        plt.show()
+
+    def compute_density_map(points_gdf, coordinates, bandwidth):
+        """
+        Compute density map for the given points.
+
+        Args:
+        points_gdf (GeoDataFrame): GeoDataFrame containing point data.
+        coordinates (array): Array of point coordinates.
+        bandwidth (float): Bandwidth parameter for the kernel density estimation.
+
+        Returns:
+        array: Density map for the points.
+        """
+        # Ensure coordinates is a 2D array
+        if len(coordinates.shape) == 1:
+            coordinates = coordinates.reshape(-1, 1)
+
+        density_map = np.zeros(len(points_gdf))
+        for i in range(len(points_gdf)):
+            for j in range(len(points_gdf)):
+                if i != j:  # Avoid self-distance
+                    # Extract x and y coordinates from tuples
+                    x1, y1 = coordinates[i]
+                    x2, y2 = coordinates[j]
+                    # Calculate Euclidean distance
+                    distance = np.linalg.norm((x2 - x1, y2 - y1))
+                    kernel_values = gaussian_kernel(distance, bandwidth)
+                    density_map[i] += kernel_values
+        return density_map
+
+
+    def find_cluster_centers(points_gdf, density_map, bandwidth):
+        """
+        Find cluster centers using the density map.
+
+        Args:
+        points_gdf (GeoDataFrame): GeoDataFrame containing point data.
+        density_map (array): Density map for the points.
+        bandwidth (float): Bandwidth parameter for the kernel density estimation.
+
+        Returns:
+        list: List of cluster centers.
+        """
+        cluster_centers = []
+        while len(points_gdf) > 0:
+            max_density_index = np.argmax(density_map)
+            cluster_center = points_gdf.iloc[max_density_index]
+            cluster_centers.append(cluster_center)
+            points_gdf = points_gdf.drop(max_density_index)
+            density_map = np.delete(density_map, max_density_index)
+            for i, point in points_gdf.iterrows():
+                distance = np.linalg.norm(np.array(cluster_center.geometry.coords[0]) - np.array(point.geometry.coords[0]))
+                point_density = gaussian_kernel(distance, bandwidth)
+                density_map[i] -= point_density
+        return cluster_centers
+
+    def assign_points_to_clusters(points_gdf, cluster_centers, bandwidth):
+        """
+        Assign points to clusters based on cluster centers.
+
+        Args:
+        points_gdf (GeoDataFrame): GeoDataFrame containing point data.
+        cluster_centers (list): List of cluster centers.
+        bandwidth (float): Bandwidth parameter for the kernel density estimation.
+
+        Returns:
+        array: Cluster labels for each point.
+        """
+        cluster_labels = np.zeros(len(points_gdf), dtype=int)
+        for i, point in points_gdf.iterrows():
+            if cluster_labels[i] == 0:  # Only assign labels to unassigned points
+                min_distance = np.inf
+                for j, center in enumerate(cluster_centers):
+                    distance = np.linalg.norm(np.array(center.geometry.coords[0]) - np.array(point.geometry.coords[0]))
+                    if distance < min_distance:
+                        min_distance = distance
+                        cluster_labels[i] = j + 1  # Use 1-based indexing for cluster labels
+        return cluster_labels
+
+    # Load shapefile point data
+    try:
+        points_gdf = gpd.read_file(points_shapefile)
+    except FileNotFoundError:
+        print("Error: File not found.")
+        return
+    except Exception as e:
+        print("Error:", e)
+        return
+
+    # Check if the bandwidth value is valid
+    if bandwidth <= 0:
+        print("Error: Bandwidth must be greater than zero.")
+        return
+
+    # Extract coordinates from GeoDataFrame
+    coordinates = np.array(points_gdf.geometry.apply(lambda point: point.coords[0]))
+
+    # Compute density map
+    density_map = compute_density_map(points_gdf, coordinates, bandwidth)
+
+    # Find cluster centers
+    cluster_centers = find_cluster_centers(points_gdf, density_map, bandwidth)
+
+    # Assign points to clusters
+    cluster_labels = assign_points_to_clusters(points_gdf, cluster_centers, bandwidth)
+
+    # Plot clusters
+    plot_clusters(points_gdf, cluster_labels)
+
 
 
 # Example usage:
