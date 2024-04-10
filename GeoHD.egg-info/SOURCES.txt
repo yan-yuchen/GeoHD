@@ -4,6 +4,7 @@ setup.py
 GeoHD/AKDE.py
 GeoHD/__init__.py
 GeoHD/analyze.py
+GeoHD/clustering.py
 GeoHD/process.py
 GeoHD/utils.py
 GeoHD/visualize.py
