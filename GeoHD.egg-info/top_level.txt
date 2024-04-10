@@ -1,2 +1,2 @@
 GeoHD
-test
+test_local
