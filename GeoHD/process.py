@@ -98,6 +98,45 @@ def plot_density_raster(smoothed_density,output_data_path, xmin, ymin, xmax, yma
     np.save(output_data_path, smoothed_density)
     print(f"Density data saved at: {output_data_path}")
 
+def kernel_density_estimation_from_shapefile(shapefile_path, bandwidth=0.1, grid_resolution=100):
+    # Read shapefile using geopandas
+    gdf = gpd.read_file(shapefile_path)
+    
+    # Extract points from geometry
+    points = gdf.geometry.apply(lambda geom: (geom.x, geom.y)).tolist()
+    points = np.array(points)
+
+    # Define the range of the grid
+    x_min, y_min = np.min(points, axis=0)
+    x_max, y_max = np.max(points, axis=0)
+    x_range = np.linspace(x_min, x_max, grid_resolution)
+    y_range = np.linspace(y_min, y_max, grid_resolution)
+
+    # Create grid
+    X, Y = np.meshgrid(x_range, y_range)
+
+    # Initialize density estimation grid
+    density = np.zeros_like(X)
+
+    # Perform kernel density estimation
+    for point in points:
+        # Calculate distances from each point to every grid point
+        distances = np.sqrt((X - point[0])**2 + (Y - point[1])**2)
+        # Apply Gaussian kernel
+        kernel_values = 1 / (2 * np.pi * bandwidth**2) * np.exp(-0.5 * (distances / bandwidth)**2)
+        # Update density grid
+        density += kernel_values
+
+    # Plot density map
+    plt.figure(figsize=(8, 6))
+    plt.imshow(np.rot90(density), cmap=plt.cm.jet, extent=[x_min, x_max, y_min, y_max])
+    plt.colorbar(label='Density')
+    plt.scatter(points[:, 0], points[:, 1], color='k', s=5, alpha=0.5)  # Plot original points
+    plt.title('Kernel Density Estimation')
+    plt.xlabel('Longitude')
+    plt.ylabel('Latitude')
+    plt.show()
+
 
 # Example usage:
 if __name__ == "__main__":
