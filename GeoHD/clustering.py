@@ -7,6 +7,7 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import pairwise_distances
 from scipy.spatial import Voronoi, voronoi_plot_2d
 import matplotlib.pyplot as plt
+from scipy.stats import multivariate_normal
 
 
 # Helper function to calculate Euclidean distance
@@ -257,6 +258,179 @@ def visualize_optics_clusters(data_matrix, cluster_labels):
     plt.legend()
     plt.grid(True)
     plt.show()
+
+
+# Function to evaluate the probability density of a multivariate Gaussian distribution
+def multivariate_gaussian_pdf(point, mean_vector, covariance_matrix,multivariate_normal):
+    """
+    Evaluates the probability density of a multivariate Gaussian distribution at a given point.
+
+    Parameters:
+    - point (np.array): The point at which to evaluate the distribution.
+    - mean_vector (np.array): The mean vector of the Gaussian distribution.
+    - covariance_matrix (np.array): The covariance matrix of the Gaussian distribution.
+
+    Returns:
+    - float: The probability density value at the given point.
+    """
+    return multivariate_normal.pdf(point, mean=mean_vector, cov=covariance_matrix)
+
+# Function to initialize the parameters for a set of Gaussian distributions
+def initialize_gaussian_params(data_matrix, num_components):
+    """
+    Initializes the parameters (means, covariances, and weights) for a set of Gaussian distributions.
+
+    Parameters:
+    - data_matrix (np.array): The data points as a matrix.
+    - num_components (int): The number of Gaussian distributions (clusters) to initialize.
+
+    Returns:
+    - tuple: A tuple containing the initialized means, covariances, and weights.
+    """
+    num_samples, num_features = data_matrix.shape
+    chosen_indices = np.random.choice(num_samples, num_components, replace=False)
+    initial_means = data_matrix[chosen_indices]
+    initial_covariances = [np.cov(data_matrix.T) for _ in range(num_components)]
+    initial_weights = np.full(num_components, 1 / num_components)
+    return initial_means, initial_covariances, initial_weights
+
+# Function to calculate the responsibilities (posteriors) for the EM algorithm
+def calculate_responsibilities(data_matrix, gaussian_params):
+    """
+    Calculates the responsibilities (posteriors) for each data point belonging to each Gaussian distribution.
+
+    Parameters:
+    - data_matrix (np.array): The data points as a matrix.
+    - gaussian_params (tuple): A tuple containing the means, covariances, and weights of the Gaussian distributions.
+
+    Returns:
+    - np.array: A matrix of responsibilities for each data point and Gaussian distribution.
+    """
+    means, covariances, weights = gaussian_params
+    num_components = len(means)
+    num_samples = data_matrix.shape[0]
+    responsibilities = np.zeros((num_samples, num_components))
+    for i, (mean, cov) in enumerate(zip(means, covariances)):
+        responsibilities[:, i] = weights[i] * multivariate_gaussian_pdf(data_matrix, mean, cov)
+    responsibilities /= responsibilities.sum(axis=1, keepdims=True)
+    return responsibilities
+
+# Function to update the Gaussian parameters in the EM algorithm
+def update_gaussian_params(data_matrix, responsibilities, gaussian_params):
+    """
+    Updates the Gaussian parameters (means, covariances, and weights) based on the responsibilities.
+
+    Parameters:
+    - data_matrix (np.array): The data points as a matrix.
+    - responsibilities (np.array): The responsibilities (posteriors) for each data point and Gaussian distribution.
+    - gaussian_params (tuple): The current parameters of the Gaussian distributions.
+
+    Returns:
+    - tuple: The updated Gaussian parameters.
+    """
+    means, covariances, weights = gaussian_params
+    num_components = len(means)
+    num_samples = data_matrix.shape[0]
+    
+    # Update parameters
+    new_means = np.array([np.sum(responsibilities[:, i].reshape(-1, 1) * data_matrix) / np.sum(responsibilities[:, i]) for i in range(num_components)])
+    new_covariances = [np.dot((data_matrix - new_means[i]).T, (responsibilities[:, i].reshape(-1, 1) * (data_matrix - new_means[i]))) for i in range(num_components)]
+    new_weights = (np.sum(responsibilities[:, i]) / num_samples for i in range(num_components))
+    
+    return new_means, new_covariances, new_weights
+
+# Function to perform the Expectation-Maximization (EM) algorithm for GMM clustering
+def em_algorithm(data_matrix, num_components, max_iterations=100, convergence_threshold=1e-6):
+    """
+    Performs the Expectation-Maximization (EM) algorithm for Gaussian Mixture Model (GMM) clustering.
+
+    Parameters:
+    - data_matrix (np.array): The data points as a matrix.
+    - num_components (int): The number of Gaussian distributions (clusters) to fit.
+    - max_iterations (int): The maximum number of iterations to run the EM algorithm.
+    - convergence_threshold (float): The convergence threshold to determine when to stop the EM algorithm.
+
+    Returns:
+    - tuple: A tuple containing the final means, covariances, and weights of the Gaussian distributions.
+    """
+    gaussian_params = initialize_gaussian_params(data_matrix, num_components)
+    prev_log_likelihood = -np.inf
+    log_likelihood = 0
+    for iteration in range(max_iterations):
+        # E-step: Calculate responsibilities
+        responsibilities = calculate_responsibilities(data_matrix, gaussian_params)
+        
+        # M-step: Update Gaussian parameters
+        gaussian_params = update_gaussian_params(data_matrix, responsibilities, gaussian_params)
+        
+        # Compute the log likelihood of the data
+        log_likelihood = np.sum([np.log(np.sum(responsibilities[:, i] * multivariate_gaussian_pdf(data_matrix, gaussian_params[i][0], gaussian_params[i][1]))) for i in range(num_components)])
+        
+        # Check for convergence
+        if np.abs(log_likelihood - prev_log_likelihood) < convergence_threshold:
+            break
+        prev_log_likelihood = log_likelihood
+        
+    return gaussian_params
+
+# Function to assign cluster labels based on the responsibilities
+def assign_clusters(data_matrix, gaussian_params):
+    """
+    Assigns cluster labels to each data point based on the highest responsibilities.
+
+    Parameters:
+    - data_matrix (np.array): The data points as a matrix.
+    - gaussian_params (tuple): The final parameters of the Gaussian distributions.
+
+    Returns:
+    - np.array: An array of cluster labels for each data point.
+    """
+    means, _, _ = gaussian_params
+    cluster_labels = np.argmax(calculate_responsibilities(data_matrix, gaussian_params), axis=1) + 1  # Add 1 to match the cluster labels with the plot
+    return cluster_labels
+
+# Function to visualize the GMM clustering results
+def visualize_gmm_clusters(points_gdf, cluster_labels):
+    """
+    Visualizes the GMM clustering results on a map.
+
+    Parameters:
+    - points_gdf (geopandas.GeoDataFrame): The GeoDataFrame containing the point data.
+    - cluster_labels (np.array): The cluster labels for each data point.
+
+    Returns:
+    - None: Displays a plot of the clusters.
+    """
+    colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k']
+    plt.figure(figsize=(10, 10))
+    for i, cluster_label in enumerate(np.unique(cluster_labels)):
+        cluster_points = points_gdf[cluster_labels == cluster_label - 1]  # Subtract 1 to match the plot
+        plt.scatter(cluster_points.geometry.x, cluster_points.geometry.y, c=colors[i % len(colors)], label=f'Cluster {cluster_label}')
+    plt.legend()
+    plt.title('GMM Clustering Results')
+    plt.xlabel('Longitude')
+    plt.ylabel('Latitude')
+    plt.show()
+
+# Main function to perform GMM clustering on point data from a shapefile
+def perform_gmm_clustering(shapefile_path, num_clusters, max_iterations=100, convergence_threshold=1e-6):
+    """
+    Performs GMM clustering on point data from a shapefile and visualizes the results.
+
+    Parameters:
+    - shapefile_path (str): The path to the shapefile containing the point data.
+    - num_clusters (int): The number of clusters to form.
+    - max_iterations (int): The maximum number of iterations for the EM algorithm.
+    - convergence_threshold (float): The convergence threshold for the EM algorithm.
+
+    Returns:
+    - None: Returns the cluster labels and displays a plot of the clusters.
+    """
+    points_gdf = gpd.read_file(shapefile_path)
+    data_matrix = np.array([(point.x, point.y) for point in points_gdf.geometry])
+    gaussian_params = em_algorithm(data_matrix, num_clusters, max_iterations, convergence_threshold)
+    cluster_labels = assign_clusters(data_matrix, gaussian_params)
+    visualize_gmm_clusters(points_gdf, cluster_labels)
 
 # Function to calculate pairwise distances between points
 def calculate_distances(data_matrix,distance):
