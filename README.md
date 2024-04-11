@@ -40,7 +40,7 @@ visualize_shapefile('data.shp', output_image_path='custom_image.png')
 ```
 
 <p align="center">
-  <img src="./doc/1.png" width="400" height="300"/>
+  <img src="./picture/1.png" width="400" height="300"/>
 </p>
 
 
@@ -51,7 +51,7 @@ plot_g_function('data.shp')
 ```
 
 <p align="center">
-  <img src="./doc/2.png" width="400" height="300"/>
+  <img src="./picture/2.png" width="400" height="300"/>
 </p>
 
 The study area was divided into a quadrilateral (hexagonal) grid and fast visualization was achieved based on the density of point data within the divided area.
@@ -64,13 +64,13 @@ create_hexagonal_heatmap(area_file, crash_file)
 ```
 
 <p align="center">
-  <img src="./doc/3.png" width="400" height="300"/>
-  <img src="./doc/4.png" width="400" height="300"/>
+  <img src="./picture/3.png" width="400" height="300"/>
+  <img src="./picture/4.png" width="400" height="300"/>
 </p>
 
 <p align="center">
-  <img src="./doc/5.png" width="400" height="300"/>
-  <img src="./doc/6.png" width="400" height="300"/>
+  <img src="./picture/5.png" width="400" height="300"/>
+  <img src="./picture/6.png" width="400" height="300"/>
 </p>
 
 Realization of kernel density analysis with fixed bandwidth:
@@ -87,7 +87,7 @@ adaptiveKDE(shp_file,output_data_path)
 ```
 
 <p align="center">
-  <img src="./doc/8.png" width="400" height="300"/>
+  <img src="./picture/8.png" width="400" height="300"/>
 </p>
 
 
@@ -99,7 +99,7 @@ visualize_hotspots(np.load(density_data_path), hotspots)
 ```
 
 <p align="center">
-  <img src="./doc/9.png" width="400" height="300"/>
+  <img src="./picture/9.png" width="400" height="300"/>
 </p>
 
 

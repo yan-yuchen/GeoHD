@@ -1,4 +1,5 @@
 main.ipynb
 .pypirc
 test_local/
+doc/build
 
