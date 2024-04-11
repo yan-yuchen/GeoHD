@@ -23,6 +23,10 @@ The main functions of GeoHD are fast visualization and hotspot detection based o
 
 ## Getting Started
 
+### Documentation
+
+We recommend starting your GeoHD journey with the [documentation](https://geohd.readthedocs.io/en/latest/).
+
 ### Install with pip
 
 The package is available in PyPi and requires [Python 3.11](https://www.python.org/downloads/) or higher. It can be installed using:
