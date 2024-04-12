@@ -144,9 +144,20 @@ def plot_l_function(data_path):
     plt.show()
 
 # Example usage:
-# Replace './data/crash.shp' with the path to your shapefile
-# plot_g_function('./data/crash.shp')
-# plot_f_function('./data/crash.shp')
-# plot_j_function('./data/crash.shp')
-# plot_k_function('./data/crash.shp')
-# plot_l_function('./data/crash.shp')
+if __name__ == "__main__":
+    import os
+    # Define the name of the folder to be created
+    folder_name = 'output'
+    # Check if the folder exists, if not, create it
+    if not os.path.exists(folder_name):
+        os.makedirs(folder_name)
+        print(f"Folder '{folder_name}' has been created.")
+    else:
+        print(f"Folder '{folder_name}' already exists.")
+    # Example usage:
+    # Replace './data/crash.shp' with the path to your shapefile
+    plot_g_function('./data/crash.shp')
+    plot_f_function('./data/crash.shp')
+    plot_j_function('./data/crash.shp')
+    plot_k_function('./data/crash.shp')
+    plot_l_function('./data/crash.shp')

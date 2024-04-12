@@ -230,16 +230,26 @@ def create_hexagonal_heatmap(area_file, crash_file, resolution=8):
     plt.ylabel('Latitude')
     plt.show()
 
+# Example usage:
+if __name__ == "__main__":
+    import os
+    # Define the name of the folder to be created
+    folder_name = 'output'
+    # Check if the folder exists, if not, create it
+    if not os.path.exists(folder_name):
+        os.makedirs(folder_name)
+        print(f"Folder '{folder_name}' has been created.")
+    else:
+        print(f"Folder '{folder_name}' already exists.")
 
+    # Example usage
+    create_cell_zones('./data/area.shp', './data/crash.shp')
 
-# Example usage
-# create_cell_zones('./data/area.shp', './data/crash.shp')
+    # Example usage
+    create_hex_grid_zones('./data/area.shp', './data/crash.shp')
 
-# Example usage
-# create_hex_grid_zones('./data/area.shp', './data/crash.shp')
+    # Example usage
+    create_cell_heatmap('./data/area.shp', './data/crash.shp')
 
-# Example usage
-# create_cell_heatmap('./data/area.shp', './data/crash.shp')
-
-# Example usage
-# create_hexagonal_heatmap('./data/area.shp', './data/crash.shp')
+    # Example usage
+    create_hexagonal_heatmap('./data/area.shp', './data/crash.shp')

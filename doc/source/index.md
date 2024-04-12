@@ -1,8 +1,8 @@
 # GeoHD
 
 ![python](https://img.shields.io/badge/python-3.11-black)
-![GitHub release](https://img.shields.io/badge/release-v0.2.4-blue)
-![pypi](https://img.shields.io/badge/pypi-v0.2.4-orange)
+![GitHub release](https://img.shields.io/badge/release-v0.2.5-blue)
+![pypi](https://img.shields.io/badge/pypi-v0.2.5-orange)
 ![license](https://img.shields.io/badge/license-GNU%20AGPLv3-green)
 
 
@@ -24,7 +24,27 @@ The package is available in PyPi and requires [Python 3.11](https://www.python.o
 ```bash
 $ pip install GeoHD
 ```
+## Issues
 
+If you encounter any **bugs** or **problems** with GeoHD, please create a post using our package [issue tracker](https://github.com/yan-yuchen/GeoHD/issues). Please provide a clear and concise description of the problem, with images or code-snippets where appropriate. We will do our best to address these problems as fast and efficiently as possible.
+
+## Contribute
+
+The authors of the GeoHD package welcome external contributions to the source code. This process will be easiest if users adhere to the contribution policy:
+
+* Open an issue on the package [issue tracker](https://github.com/yan-yuchen/GeoHD/issues) clearly describing your intentions on code modifications or additions
+* Ensure your modifications or additions adhere to the existing standard of the GeoHD package, specifically detailed documentation for new methods (see existing methods for example documentation)
+* Test your modifications to ensure that the core functionality of the package has not been altered by running the unit tests 
+* Once the issue has been discussed with a package author, you may open a pull request containing your modifications
+
+## Citation
+
+
+## Authors
+
+* Yuchen Yan
+* Yuxin Wang
+* Wei Quan
 
 ```{toctree}
 ---
@@ -32,8 +52,8 @@ maxdepth: 2
 caption: Documentation
 hidden: true
 ---
-installation
 getting_started
+theory
 api
 changelog
 GitHub <https://github.com/yan-yuchen/GeoHD>

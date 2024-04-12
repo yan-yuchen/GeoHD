@@ -1,8 +1,8 @@
 # GeoHD
 
 ![python](https://img.shields.io/badge/python-3.11-black)
-![GitHub release](https://img.shields.io/badge/release-v0.2.4-blue)
-![pypi](https://img.shields.io/badge/pypi-v0.2.4-orange)
+![GitHub release](https://img.shields.io/badge/release-v0.2.5-blue)
+![pypi](https://img.shields.io/badge/pypi-v0.2.5-orange)
 ![license](https://img.shields.io/badge/license-GNU%20AGPLv3-green)
 
 [**Getting Started**](#getting-started)
@@ -36,6 +36,15 @@ $ pip install GeoHD
 ```
 
 ### Usage
+
+A case-testing approach:
+
+```bash
+$ cd test
+$ python -m test_automation
+```
+
+You can also run `test.ipynb` in jupyter notebook
 
 Visualization of hotspots on real maps:
 
@@ -127,3 +136,5 @@ The authors of the GeoHD package welcome external contributions to the source co
 ## Authors
 
 * Yuchen Yan
+* Yuxin Wang
+* Wei Quan
