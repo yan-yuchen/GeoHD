@@ -1,6 +1,10 @@
 # Changelog
 
-## Version 0.2.5 (April 13, 2014)
+## Version 0.2.6 (April 19, 2024)
+
+Updated documentation.
+
+## Version 0.2.5 (April 13, 2024)
 
 Improved documentation and made minor adjustments to some function comments.
 

@@ -1,8 +1,8 @@
 # GeoHD
 
 ![python](https://img.shields.io/badge/python-3.11-black)
-![GitHub release](https://img.shields.io/badge/release-v0.2.5-blue)
-![pypi](https://img.shields.io/badge/pypi-v0.2.5-orange)
+![GitHub release](https://img.shields.io/badge/release-v0.2.6-blue)
+![pypi](https://img.shields.io/badge/pypi-v0.2.6-orange)
 ![license](https://img.shields.io/badge/license-GNU%20AGPLv3-green)
 
 [**Getting Started**](#getting-started)
@@ -136,5 +136,4 @@ The authors of the GeoHD package welcome external contributions to the source co
 ## Authors
 
 * Yuchen Yan
-* Yuxin Wang
-* Wei Quan
+
