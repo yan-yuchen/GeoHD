@@ -2,7 +2,7 @@
 
 ![python](https://img.shields.io/badge/python-3.11-black)
 ![GitHub release](https://img.shields.io/badge/release-v0.2.7-blue)
-![pypi](https://img.shields.io/badge/pypi-v0.2.6-orange)
+![pypi](https://img.shields.io/badge/pypi-v0.2.7-orange)
 ![license](https://img.shields.io/badge/license-GNU%20AGPLv3-green)
 
 
