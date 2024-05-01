@@ -1,7 +1,7 @@
 # GeoHD
 
 ![python](https://img.shields.io/badge/python-3.11-black)
-![GitHub release](https://img.shields.io/badge/release-v0.2.6-blue)
+![GitHub release](https://img.shields.io/badge/release-v0.2.7-blue)
 ![pypi](https://img.shields.io/badge/pypi-v0.2.6-orange)
 ![license](https://img.shields.io/badge/license-GNU%20AGPLv3-green)
 
@@ -39,6 +39,9 @@ The authors of the GeoHD package welcome external contributions to the source co
 
 ## Citation
 
+Yan, Y., 2024. GeoHD: A Python Toolkit for Geospatial Hotspot Detection, Visualization, and Analysis. SSRN Electron. J. https://doi.org/10.2139/ssrn.4799686
+
+Yan, Y., Quan, W., Wang, H., 2024. A data‐driven adaptive geospatial hotspot detection approach in smart cities. Trans. GIS tgis.13137. https://doi.org/10.1111/tgis.13137
 
 ## Authors
 
